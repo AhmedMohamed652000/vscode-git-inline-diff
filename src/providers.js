@@ -29,7 +29,7 @@ class BaseContentProvider {
     try {
       return await git.catBlob(q.root, q.sha);
     } catch (err) {
-      return `// Git Inline Diff could not read ${q.label || 'the base'}: ${err.message}`;
+      return `// Hunkly could not read ${q.label || 'the base'}: ${err.message}`;
     }
   }
 }
@@ -131,7 +131,7 @@ class HunkHoverProvider {
         ['$(combine) Accept both', 'gitInlineDiff.keepBoth', `Insert the ${label} lines above mine`],
       ];
     } else {
-      md.appendMarkdown(`**Git Inline Diff** · vs \`${label}\`  \n`);
+      md.appendMarkdown(`**Hunkly** · vs \`${label}\`  \n`);
       lines = [...block('- ', hunk.oldLines), ...block('+ ', hunk.newLines)];
       actions = [
         ['$(check) Accept', 'gitInlineDiff.acceptHunk', 'Keep my version'],

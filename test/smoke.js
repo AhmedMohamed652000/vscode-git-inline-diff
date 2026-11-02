@@ -361,7 +361,7 @@ async function main() {
   vscode.config.removedLinesView = 'rows';
   const realCreate = vscode.window.createWebviewTextEditorInset;
   vscode.window.createWebviewTextEditorInset = () => {
-    throw new Error("Extension 'Ghammes.git-inline-diff' CANNOT use API proposal: editorInsets.");
+    throw new Error("Extension 'Ghammes.hunkly' CANNOT use API proposal: editorInsets.");
   };
   controller.resetAll();
   await controller.refresh(rd, true);

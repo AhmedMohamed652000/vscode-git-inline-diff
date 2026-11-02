@@ -75,7 +75,7 @@ class Controller {
     this._onDidChange = new vscode.EventEmitter();
     /** Fires with the document uri whenever hunks or accepted state changed. */
     this.onDidChange = this._onDidChange.event;
-    this.output = vscode.window.createOutputChannel('Git Inline Diff');
+    this.output = vscode.window.createOutputChannel('Hunkly');
     this.decor = createDecorationTypes({ gutter: cfg().get('showGutterIcons', true) });
     this.insets = new InsetRenderer({
       log: (m) => this.log(m),
@@ -83,16 +83,16 @@ class Controller {
       onAction: (uri, hunkId, action) => this.insetAction(uri, hunkId, action),
     });
     this.status = vscode.window.createStatusBarItem('gitInlineDiff.status', vscode.StatusBarAlignment.Right, 100);
-    this.status.name = 'Git Inline Diff';
+    this.status.name = 'Hunkly';
     this.status.command = 'gitInlineDiff.showMenu';
     // ↑ ↓ next to the summary: jump between changes with the mouse
     this.statusPrev = vscode.window.createStatusBarItem('gitInlineDiff.prev', vscode.StatusBarAlignment.Right, 99);
-    this.statusPrev.name = 'Git Inline Diff: previous change';
+    this.statusPrev.name = 'Hunkly: previous change';
     this.statusPrev.text = '$(chevron-up)';
     this.statusPrev.tooltip = 'Previous change (Shift+F7)';
     this.statusPrev.command = 'gitInlineDiff.previousHunk';
     this.statusNext = vscode.window.createStatusBarItem('gitInlineDiff.next', vscode.StatusBarAlignment.Right, 98);
-    this.statusNext.name = 'Git Inline Diff: next change';
+    this.statusNext.name = 'Hunkly: next change';
     this.statusNext.text = '$(chevron-down)';
     this.statusNext.tooltip = 'Next change (F7)';
     this.statusNext.command = 'gitInlineDiff.nextHunk';
@@ -127,7 +127,7 @@ class Controller {
     if (!/CANNOT use|proposed/i.test(String(err && err.message))) return;
     vscode.window
       .showInformationMessage(
-        'Git Inline Diff: showing removed lines as full rows needs the "editorInsets" proposed API. Enable it for this extension? (quit and start the editor again afterwards)',
+        'Hunkly: showing removed lines as full rows needs the "editorInsets" proposed API. Enable it for this extension? (quit and start the editor again afterwards)',
         'Enable rows',
         'Use inline chips'
       )
@@ -352,7 +352,7 @@ class Controller {
       if (git.isGitMissing(err)) {
         if (!this.gitMissingReported) {
           this.gitMissingReported = true;
-          vscode.window.showWarningMessage('Git Inline Diff: "git" was not found on PATH. The extension is idle until git is installed.');
+          vscode.window.showWarningMessage('Hunkly: "git" was not found on PATH. The extension is idle until git is installed.');
         }
         st.kind = 'notgit';
       } else {
@@ -659,8 +659,8 @@ class Controller {
     }
     const label = st.label || 'base';
     if (st.kind === 'error') {
-      this.status.text = `$(warning) Git Inline Diff: ${st.error}`;
-      this.status.tooltip = 'Git Inline Diff — click for options';
+      this.status.text = `$(warning) Hunkly: ${st.error}`;
+      this.status.tooltip = 'Hunkly — click for options';
     } else if (st.kind === 'new') {
       this.status.text = `$(diff-added) ${label}: new file`;
       this.status.tooltip = `This file does not exist in ${label}`;

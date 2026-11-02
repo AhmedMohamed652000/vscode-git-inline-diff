@@ -1,12 +1,16 @@
 {
-  "name": "git-inline-diff",
-  "displayName": "Git Inline Diff (Accept / Reject)",
-  "description": "Cursor-style review of what changed in the open file compared to GitHub (upstream branch), HEAD or the index. Added lines are green, removed lines are shown in red, and every hunk can be accepted or rejected with a click or a shortcut.",
+  "name": "hunkly",
+  "displayName": "Hunkly — Accept / Reject Git Changes Inline",
+  "description": "Cursor-style inline review of what changed in the open file vs GitHub (upstream branch), HEAD or the index. Removed lines as red rows, added lines in green, mine / incoming / conflict classification, and Accept or Reject on every hunk with one click or one shortcut.",
   "version": "0.5.0",
   "publisher": "Ghammes",
   "author": { "name": "Ghammes" },
   "license": "MIT",
   "icon": "icon.png",
+  "galleryBanner": { "color": "#1b1b1b", "theme": "dark" },
+  "repository": { "type": "git", "url": "https://github.com/AhmedMohamed652000/vscode-git-inline-diff.git" },
+  "bugs": { "url": "https://github.com/AhmedMohamed652000/vscode-git-inline-diff/issues" },
+  "homepage": "https://github.com/AhmedMohamed652000/vscode-git-inline-diff#readme",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -21,7 +25,12 @@
     "review",
     "accept",
     "reject",
-    "cursor"
+    "cursor",
+    "hunk",
+    "upstream",
+    "merge conflict",
+    "code review",
+    "inline diff"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -32,23 +41,23 @@
   ],
   "contributes": {
     "commands": [
-      { "command": "gitInlineDiff.acceptHunk", "title": "Accept Hunk (keep my version)", "category": "Git Inline Diff", "icon": "$(check)" },
-      { "command": "gitInlineDiff.rejectHunk", "title": "Reject Hunk (take the base / remote version)", "category": "Git Inline Diff", "icon": "$(close)" },
-      { "command": "gitInlineDiff.keepBoth", "title": "Accept Both (conflict: insert the remote lines above mine)", "category": "Git Inline Diff", "icon": "$(combine)" },
-      { "command": "gitInlineDiff.acceptAll", "title": "Accept All Hunks in File", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.rejectAll", "title": "Reject All Hunks in File (restore base version)", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.nextHunk", "title": "Go to Next Hunk", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.previousHunk", "title": "Go to Previous Hunk", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.openDiff", "title": "Open Diff Against Base", "category": "Git Inline Diff", "icon": "$(git-compare)" },
-      { "command": "gitInlineDiff.showBase", "title": "Open Base Version (read-only)", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.reviewAll", "title": "Review All Changed Files Against Base", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.refresh", "title": "Refresh", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.fetchAndRefresh", "title": "Fetch Remote and Refresh", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.resetAccepted", "title": "Show Accepted Hunks Again (this file)", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.chooseBase", "title": "Choose What to Compare Against", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.toggle", "title": "Enable / Disable", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.enableInlineRows", "title": "Enable Inline Rows (proposed API, restart required)", "category": "Git Inline Diff" },
-      { "command": "gitInlineDiff.showMenu", "title": "Show Menu", "category": "Git Inline Diff" }
+      { "command": "gitInlineDiff.acceptHunk", "title": "Accept Hunk (keep my version)", "category": "Hunkly", "icon": "$(check)" },
+      { "command": "gitInlineDiff.rejectHunk", "title": "Reject Hunk (take the base / remote version)", "category": "Hunkly", "icon": "$(close)" },
+      { "command": "gitInlineDiff.keepBoth", "title": "Accept Both (conflict: insert the remote lines above mine)", "category": "Hunkly", "icon": "$(combine)" },
+      { "command": "gitInlineDiff.acceptAll", "title": "Accept All Hunks in File", "category": "Hunkly" },
+      { "command": "gitInlineDiff.rejectAll", "title": "Reject All Hunks in File (restore base version)", "category": "Hunkly" },
+      { "command": "gitInlineDiff.nextHunk", "title": "Go to Next Hunk", "category": "Hunkly" },
+      { "command": "gitInlineDiff.previousHunk", "title": "Go to Previous Hunk", "category": "Hunkly" },
+      { "command": "gitInlineDiff.openDiff", "title": "Open Diff Against Base", "category": "Hunkly", "icon": "$(git-compare)" },
+      { "command": "gitInlineDiff.showBase", "title": "Open Base Version (read-only)", "category": "Hunkly" },
+      { "command": "gitInlineDiff.reviewAll", "title": "Review All Changed Files Against Base", "category": "Hunkly" },
+      { "command": "gitInlineDiff.refresh", "title": "Refresh", "category": "Hunkly" },
+      { "command": "gitInlineDiff.fetchAndRefresh", "title": "Fetch Remote and Refresh", "category": "Hunkly" },
+      { "command": "gitInlineDiff.resetAccepted", "title": "Show Accepted Hunks Again (this file)", "category": "Hunkly" },
+      { "command": "gitInlineDiff.chooseBase", "title": "Choose What to Compare Against", "category": "Hunkly" },
+      { "command": "gitInlineDiff.toggle", "title": "Enable / Disable", "category": "Hunkly" },
+      { "command": "gitInlineDiff.enableInlineRows", "title": "Enable Inline Rows (proposed API, restart required)", "category": "Hunkly" },
+      { "command": "gitInlineDiff.showMenu", "title": "Show Menu", "category": "Hunkly" }
     ],
     "keybindings": [
       { "command": "gitInlineDiff.acceptHunk", "key": "ctrl+shift+y", "mac": "cmd+shift+y", "when": "editorTextFocus && gitInlineDiff.hunkAtCursor" },
@@ -74,7 +83,7 @@
       ]
     },
     "configuration": {
-      "title": "Git Inline Diff",
+      "title": "Hunkly",
       "properties": {
         "gitInlineDiff.enabled": {
           "type": "boolean",
@@ -95,7 +104,7 @@
           "type": "string",
           "enum": ["rows", "inline", "off"],
           "enumDescriptions": [
-            "Real rows right above the hunk with the action buttons inside, Cursor style (default). Needs the editorInsets proposed API: run 'Git Inline Diff: Enable Inline Rows' once and restart the editor. Falls back to inline chips + CodeLens until then.",
+            "Real rows right above the hunk with the action buttons inside, Cursor style (default). Needs the editorInsets proposed API: run 'Hunkly: Enable Inline Rows' once and restart the editor. Falls back to inline chips + CodeLens until then.",
             "Coloured chips at the end of the changed lines, actions as CodeLens.",
             "Nothing inline; the hover and the diff editor still show the other side."
           ],
@@ -216,7 +225,7 @@
   },
   "scripts": {
     "test": "node test/smoke.js",
-    "package": "vsce package --allow-missing-repository --skip-license"
+    "package": "vsce package"
   },
   "dependencies": {
     "diff": "^8.0.2"

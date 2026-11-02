@@ -33,7 +33,7 @@ async function target(controller, uriArg, hunkId) {
 }
 
 function noHunk() {
-  vscode.window.setStatusBarMessage('Git Inline Diff: no change under the cursor', 2500);
+  vscode.window.setStatusBarMessage('Hunkly: no change under the cursor', 2500);
 }
 
 function sortedPending(controller, st, lineCount) {
@@ -57,7 +57,7 @@ function advanceAfter(controller, doc, fromLine) {
   if (!editor || !st || st.kind !== 'ok') return;
   const hunks = sortedPending(controller, st, doc.lineCount);
   if (!hunks.length) {
-    vscode.window.setStatusBarMessage(`$(check) Git Inline Diff: ${path.basename(doc.fileName)} reviewed`, 3000);
+    vscode.window.setStatusBarMessage(`$(check) Hunkly: ${path.basename(doc.fileName)} reviewed`, 3000);
     return;
   }
   const next = hunks.find((h) => firstLine(h, doc.lineCount) >= fromLine) || hunks[0];
@@ -85,7 +85,7 @@ function registerCommands(controller) {
         return await fn(...args);
       } catch (err) {
         controller.log(err);
-        vscode.window.showErrorMessage(`Git Inline Diff: ${err.message || err}`);
+        vscode.window.showErrorMessage(`Hunkly: ${err.message || err}`);
       }
     });
 
@@ -110,7 +110,7 @@ function registerCommands(controller) {
       const { doc, hunk } = await target(controller, uriArg, hunkId);
       if (!doc || !hunk) return noHunk();
       if (hunk.kind !== 'conflict') {
-        vscode.window.setStatusBarMessage('Git Inline Diff: "Accept both" is for conflicts only', 2500);
+        vscode.window.setStatusBarMessage('Hunkly: "Accept both" is for conflicts only', 2500);
         return;
       }
       const from = firstLine(hunk, doc.lineCount);
@@ -161,8 +161,8 @@ function registerCommands(controller) {
 
     reg('gitInlineDiff.openDiff', async (uriArg, hunkId) => {
       const { doc, st, hunk, editor } = await target(controller, uriArg, hunkId);
-      if (!doc || !st || !st.root) return vscode.window.showInformationMessage('Git Inline Diff: this file is not inside a git repository.');
-      if (st.kind === 'error') return vscode.window.showWarningMessage(`Git Inline Diff: ${st.error}`);
+      if (!doc || !st || !st.root) return vscode.window.showInformationMessage('Hunkly: this file is not inside a git repository.');
+      if (st.kind === 'error') return vscode.window.showWarningMessage(`Hunkly: ${st.error}`);
       let selection;
       const focus = hunk || (editor && controller.hunkAt(doc, editor.selection.active.line)) || sortedPending(controller, st, doc.lineCount)[0];
       if (focus) {
@@ -175,20 +175,20 @@ function registerCommands(controller) {
 
     reg('gitInlineDiff.showBase', async (uriArg) => {
       const { doc, st } = await target(controller, uriArg);
-      if (!doc || !st || !st.root) return vscode.window.showInformationMessage('Git Inline Diff: this file is not inside a git repository.');
+      if (!doc || !st || !st.root) return vscode.window.showInformationMessage('Hunkly: this file is not inside a git repository.');
       await vscode.window.showTextDocument(baseUri(st), { preview: true, viewColumn: vscode.ViewColumn.Beside });
     }),
 
     reg('gitInlineDiff.reviewAll', async () => {
       const ed = vscode.window.activeTextEditor;
       const root = await repoRootFor(ed && ed.document);
-      if (!root) return vscode.window.showInformationMessage('Git Inline Diff: no git repository found.');
+      if (!root) return vscode.window.showInformationMessage('Hunkly: no git repository found.');
       const base = await git.resolveBase(root, cfg().get('base', 'upstream'));
-      if (!(await git.refExists(root, base.ref))) return vscode.window.showWarningMessage(`Git Inline Diff: ref "${base.ref}" not found.`);
+      if (!(await git.refExists(root, base.ref))) return vscode.window.showWarningMessage(`Hunkly: ref "${base.ref}" not found.`);
       const files = await git.changedFiles(root, base.ref);
       const deleted = [];
       const list = [];
-      await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: `Git Inline Diff: collecting changes vs ${base.label}` }, async () => {
+      await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: `Hunkly: collecting changes vs ${base.label}` }, async () => {
         for (const f of files) {
           if (f.status === 'D') {
             deleted.push(f.path);
@@ -201,22 +201,22 @@ function registerCommands(controller) {
           list.push([modified, original, modified]);
         }
       });
-      if (!list.length && !deleted.length) return vscode.window.showInformationMessage(`Git Inline Diff: no changes vs ${base.label}.`);
+      if (!list.length && !deleted.length) return vscode.window.showInformationMessage(`Hunkly: no changes vs ${base.label}.`);
       if (list.length) await vscode.commands.executeCommand('vscode.changes', `Changes vs ${base.label}`, list);
-      if (deleted.length) vscode.window.showInformationMessage(`Git Inline Diff: ${deleted.length} file(s) deleted locally are not shown: ${deleted.slice(0, 5).join(', ')}${deleted.length > 5 ? '…' : ''}`);
+      if (deleted.length) vscode.window.showInformationMessage(`Hunkly: ${deleted.length} file(s) deleted locally are not shown: ${deleted.slice(0, 5).join(', ')}${deleted.length > 5 ? '…' : ''}`);
     }),
 
     reg('gitInlineDiff.enableInlineRows', async () => {
-      const extId = (controller.context.extension && controller.context.extension.id) || 'Ghammes.git-inline-diff';
+      const extId = (controller.context.extension && controller.context.extension.id) || 'Ghammes.hunkly';
       const argvPath = argvPathFor(vscode.env.appRoot);
       const res = enableProposedApi(argvPath, extId);
       const app = vscode.env.appName;
       if (res.changed) {
         vscode.window.showInformationMessage(
-          `Git Inline Diff: "enable-proposed-api": ["${extId}"] was added to ${argvPath} (backup: argv.json.bak). Quit ${app} completely and start it again; removed lines then show as rows.`
+          `Hunkly: "enable-proposed-api": ["${extId}"] was added to ${argvPath} (backup: argv.json.bak). Quit ${app} completely and start it again; removed lines then show as rows.`
         );
       } else {
-        vscode.window.showInformationMessage(`Git Inline Diff: ${argvPath} already enables the proposed API for ${extId}. Quit ${app} completely and start it again if the rows do not show.`);
+        vscode.window.showInformationMessage(`Hunkly: ${argvPath} already enables the proposed API for ${extId}. Quit ${app} completely and start it again if the rows do not show.`);
       }
     }),
 
@@ -228,8 +228,8 @@ function registerCommands(controller) {
     reg('gitInlineDiff.fetchAndRefresh', async () => {
       const ed = vscode.window.activeTextEditor;
       const root = await repoRootFor(ed && ed.document);
-      if (!root) return vscode.window.showInformationMessage('Git Inline Diff: no git repository found.');
-      await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: `Git Inline Diff: git fetch (${path.basename(root)})` }, () => git.fetch(root));
+      if (!root) return vscode.window.showInformationMessage('Hunkly: no git repository found.');
+      await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: `Hunkly: git fetch (${path.basename(root)})` }, () => git.fetch(root));
       controller.baseCache.clear();
       controller.refreshVisible(true);
     }),
@@ -262,7 +262,7 @@ function registerCommands(controller) {
     reg('gitInlineDiff.toggle', async () => {
       const enabled = cfg().get('enabled', true);
       await cfg().update('enabled', !enabled, vscode.ConfigurationTarget.Global);
-      vscode.window.setStatusBarMessage(`Git Inline Diff ${enabled ? 'disabled' : 'enabled'}`, 2500);
+      vscode.window.setStatusBarMessage(`Hunkly ${enabled ? 'disabled' : 'enabled'}`, 2500);
     }),
 
     reg('gitInlineDiff.showMenu', async () => {
@@ -281,9 +281,9 @@ function registerCommands(controller) {
         { label: '$(cloud-download) Fetch remote and refresh', description: 'git fetch, then compare again', command: 'gitInlineDiff.fetchAndRefresh' },
         { label: '$(refresh) Refresh', command: 'gitInlineDiff.refresh' },
         { label: '$(settings-gear) Compare against…', description: `current: ${cfg().get('base', 'upstream')}`, command: 'gitInlineDiff.chooseBase' },
-        { label: `$(circle-slash) ${cfg().get('enabled', true) ? 'Disable' : 'Enable'} Git Inline Diff`, command: 'gitInlineDiff.toggle' },
+        { label: `$(circle-slash) ${cfg().get('enabled', true) ? 'Disable' : 'Enable'} Hunkly`, command: 'gitInlineDiff.toggle' },
       ];
-      const pick = await vscode.window.showQuickPick(items, { placeHolder: 'Git Inline Diff' });
+      const pick = await vscode.window.showQuickPick(items, { placeHolder: 'Hunkly' });
       if (pick) await vscode.commands.executeCommand(pick.command);
     }),
   ];

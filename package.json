@@ -6,6 +6,7 @@
   "publisher": "Ghammes",
   "author": { "name": "Ghammes" },
   "license": "MIT",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.85.0"
   },

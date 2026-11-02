@@ -6,6 +6,7 @@ const git = require('./git');
 const { computeHunks, computeThreeWay, splitLines, markerLine, firstLine, lastLine, hunkContains } = require('./diff');
 const { createDecorationTypes } = require('./decorations');
 const { InsetRenderer } = require('./insets');
+const { argvPathFor, enableProposedApi } = require('./argv');
 
 const SECTION = 'gitInlineDiff';
 const ACCEPTED_KEY = 'gitInlineDiff.accepted';
@@ -101,7 +102,10 @@ class Controller {
     this.gitMissingReported = false;
     this.repoChangeTimer = undefined;
     this.disposables.push(this._onDidChange, this.status, this.output);
+    this.restartAsked = false;
+    this.argvListed = false;
     this.wire();
+    this.autoEnableRows();
   }
 
   dispose() {
@@ -118,13 +122,57 @@ class Controller {
     this.output.appendLine(`[${new Date().toISOString()}] ${text}`);
   }
 
-  /** The editorInsets proposal is not enabled for this extension: redraw with chips and say how to turn rows on. */
+  extensionId() {
+    return (this.context.extension && this.context.extension.id) || 'Ghammes.hunkly';
+  }
+
+  /**
+   * Rows are the default look, but an editor only grants the editorInsets proposal to extensions listed in its
+   * argv.json. So on activation Hunkly lists itself there (backup kept) and asks for ONE full restart; nothing is
+   * written when the user chose chips (removedLinesView = inline / off) or when the entry already exists.
+   */
+  autoEnableRows() {
+    if (cfg().get('removedLinesView', 'rows') !== 'rows') return;
+    const env = vscode.env;
+    if (!env || !env.appRoot) return;
+    let res;
+    try {
+      res = enableProposedApi(argvPathFor(env.appRoot), this.extensionId());
+    } catch (err) {
+      this.log(err);
+      return;
+    }
+    this.argvListed = true;
+    if (!res.changed) return;
+    this.log(`added ${this.extensionId()} to "enable-proposed-api" in ${res.argvPath}`);
+    this.askRestart(
+      `Hunkly: Cursor-style rows are turned on (${res.argvPath}, backup argv.json.bak). Quit ${env.appName} completely and start it again to see them; until then changes are shown as chips.`
+    );
+  }
+
+  /** One restart notice per session, with a button that quits the editor and one that switches to chips for good. */
+  askRestart(message) {
+    if (this.restartAsked) return;
+    this.restartAsked = true;
+    const app = (vscode.env && vscode.env.appName) || 'the editor';
+    vscode.window.showInformationMessage(message, `Quit ${app} now`, 'Use chips instead').then((pick) => {
+      if (typeof pick === 'string' && pick.startsWith('Quit')) vscode.commands.executeCommand('workbench.action.quit');
+      else if (pick === 'Use chips instead') cfg().update('removedLinesView', 'inline', vscode.ConfigurationTarget.Global);
+    });
+  }
+
+  /** The editorInsets proposal is not enabled (yet): redraw with chips, then ask for the one restart or say how to enable rows by hand. */
   reportInsetsUnavailable(err) {
     for (const ed of vscode.window.visibleTextEditors) {
       const st = this.getState(ed.document.uri);
       if (st) this.decorate(ed, st);
     }
     if (!/CANNOT use|proposed/i.test(String(err && err.message))) return;
+    if (this.argvListed) {
+      const app = (vscode.env && vscode.env.appName) || 'the editor';
+      this.askRestart(`Hunkly: the editorInsets rows need one restart. Quit ${app} completely and start it again; until then changes are shown as chips.`);
+      return;
+    }
     vscode.window
       .showInformationMessage(
         'Hunkly: showing removed lines as full rows needs the "editorInsets" proposed API. Enable it for this extension? (quit and start the editor again afterwards)',

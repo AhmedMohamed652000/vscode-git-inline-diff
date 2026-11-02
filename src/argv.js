@@ -49,6 +49,7 @@ function stripJsonComments(text) {
 
 /** argv.json of the editor installed at `appRoot` (<install>/resources/app), e.g. ~/.vscode/argv.json. */
 function argvPathFor(appRoot) {
+  if (process.env.HUNKLY_ARGV_JSON) return process.env.HUNKLY_ARGV_JSON; // tests and unusual setups
   let dataFolderName = '.vscode';
   try {
     const product = JSON.parse(fs.readFileSync(path.join(appRoot, 'product.json'), 'utf8'));

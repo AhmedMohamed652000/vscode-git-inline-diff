@@ -19,6 +19,8 @@ Module._resolveFilename = function (request, ...rest) {
 require.cache['vscode'] = { id: 'vscode', filename: 'vscode', loaded: true, exports: vscode };
 
 const { activate } = require('../extension');
+const { Controller } = require('../src/controller');
+const { stripJsonComments } = require('../src/argv');
 
 const store = {};
 const context = {
@@ -372,6 +374,42 @@ async function main() {
   vscode.window.createWebviewTextEditorInset = realCreate;
   vscode.config.removedLinesView = 'inline';
   controller.resetAll();
+
+  // rows are the default: on activation the extension lists itself in argv.json (HUNKLY_ARGV_JSON overrides the path) and asks for ONE restart
+  {
+    const argvFile = path.join(os.tmpdir(), `hunkly-argv-${process.pid}.json`);
+    fs.writeFileSync(argvFile, '// comment\n{\n\t"locale": "en"\n}\n');
+    process.env.HUNKLY_ARGV_JSON = argvFile;
+    vscode.env = { appRoot: os.tmpdir(), appName: 'FakeCode' };
+    vscode.config.removedLinesView = 'rows';
+    const ctx2 = () => ({ subscriptions: [], workspaceState: context.workspaceState, extension: { id: 'Ghammes.hunkly' } });
+    const before = vscode.messages.length;
+    const c2 = new Controller(ctx2());
+    const written = JSON.parse(stripJsonComments(fs.readFileSync(argvFile, 'utf8')));
+    assert.deepStrictEqual(written['enable-proposed-api'], ['Ghammes.hunkly'], 'argv.json lists the extension after activation');
+    assert.strictEqual(written.locale, 'en', 'other argv.json keys are kept');
+    assert.ok(fs.existsSync(argvFile + '.bak'), 'argv.json backup kept');
+    assert.ok(vscode.messages.slice(before).some((m) => m.includes('rows are turned on') && m.includes('Quit FakeCode')), 'one restart notice with the app name');
+    // the entry is already there (restart still pending): activation is silent, the refused API asks for the restart once
+    const before2 = vscode.messages.length;
+    const c3 = new Controller(ctx2());
+    assert.strictEqual(vscode.messages.length, before2, 'silent activation when argv.json already lists the extension');
+    c3.reportInsetsUnavailable(new Error("Extension 'Ghammes.hunkly' CANNOT use API proposal: editorInsets."));
+    c3.reportInsetsUnavailable(new Error("Extension 'Ghammes.hunkly' CANNOT use API proposal: editorInsets."));
+    assert.strictEqual(vscode.messages.slice(before2).filter((m) => m.includes('need one restart')).length, 1, 'one restart notice per session');
+    // chips chosen on purpose: argv.json is left alone
+    fs.writeFileSync(argvFile, '{}\n');
+    vscode.config.removedLinesView = 'inline';
+    const c4 = new Controller(ctx2());
+    assert.strictEqual(fs.readFileSync(argvFile, 'utf8'), '{}\n', 'argv.json untouched when rows are off');
+    c2.dispose();
+    c3.dispose();
+    c4.dispose();
+    delete vscode.env;
+    delete process.env.HUNKLY_ARGV_JSON;
+    fs.unlinkSync(argvFile);
+    fs.unlinkSync(argvFile + '.bak');
+  }
 
   console.log('smoke test: all assertions passed');
 

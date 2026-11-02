@@ -104,7 +104,7 @@
           "type": "string",
           "enum": ["rows", "inline", "off"],
           "enumDescriptions": [
-            "Real rows right above the hunk with the action buttons inside, Cursor style (default). Needs the editorInsets proposed API: run 'Hunkly: Enable Inline Rows' once and restart the editor. Falls back to inline chips + CodeLens until then.",
+            "Real rows right above the hunk with the action bar below, Cursor style (default). Hunkly lists itself in the editor's argv.json automatically (editorInsets proposed API); quit and start the editor once after the first run. Falls back to inline chips + CodeLens until then.",
             "Coloured chips at the end of the changed lines, actions as CodeLens.",
             "Nothing inline; the hover and the diff editor still show the other side."
           ],

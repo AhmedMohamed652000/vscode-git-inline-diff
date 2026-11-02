@@ -49,7 +49,7 @@ So `Ctrl+Shift+Y` always means *keep what is in my file* and `Ctrl+N` always mea
 
 ## Works everywhere — with or without the rows
 
-The red rows are drawn with VS Code's `editorInsets` proposed API, which needs a one-time switch (see [Turn on the rows](#turn-on-the-cursor-style-rows-one-time)). Until then Hunkly shows exactly the same information as **red chips at the end of each changed line, plus a CodeLens with the buttons**:
+The red rows are drawn with VS Code's `editorInsets` proposed API, which the editor only grants after one full restart (Hunkly sets that up by itself, see [The rows need one restart](#the-rows-need-one-restart)). Until you restart, and in editors that refuse the proposed API, Hunkly shows exactly the same information as **red chips at the end of each changed line, plus a CodeLens with the buttons**:
 
 ![the chips + CodeLens style: no proposed API needed](images/fallback.png)
 
@@ -85,14 +85,14 @@ The status bar always tells you where you stand — `origin/development: 3 mine 
 
 Change them in *File → Preferences → Keyboard Shortcuts* (search for "Hunkly").
 
-## Turn on the Cursor-style rows (one time)
+## The rows need one restart
 
-VS Code only grants the `editorInsets` proposed API to extensions listed in its `argv.json`. Hunkly does that for you:
+VS Code only grants the `editorInsets` proposed API to extensions listed in its `argv.json`. Hunkly takes care of that by itself: the first time it runs it adds `"enable-proposed-api": ["Ghammes.hunkly"]` to the editor's `argv.json` (a `.bak` copy is kept) and shows one notification with a **Quit now** button.
 
-1. Run **Hunkly: Enable Inline Rows** from the Command Palette (or click *Enable rows* in the prompt Hunkly shows the first time). It adds `"enable-proposed-api": ["Ghammes.hunkly"]` to the editor's `argv.json` and keeps a `.bak` copy.
-2. Quit the editor completely (all windows) and start it again. *Reload Window* is not enough.
+1. Click **Quit now** (or quit the editor completely yourself — all windows; *Reload Window* is not enough).
+2. Start the editor again. From now on removed lines show as rows.
 
-That is all. Without it Hunkly keeps working with chips + CodeLens.
+Until then Hunkly keeps working with chips + CodeLens. Prefer the chips? Click **Use chips instead** in that notification or set `"gitInlineDiff.removedLinesView": "inline"`; Hunkly then leaves `argv.json` alone. **Hunkly: Enable Inline Rows** in the Command Palette does the same step by hand.
 
 ## The real diff editor is one key away
 
@@ -122,7 +122,7 @@ To make the diff editor inline (unified) instead of side by side:
 | `gitInlineDiff.base` | `upstream` | `upstream` (origin/<branch>), `head`, `index`, or any git ref such as `origin/main` |
 | `gitInlineDiff.threeWay` | `true` | classify hunks as mine / incoming / conflict using the merge base |
 | `gitInlineDiff.advanceAfterAction` | `true` | jump to the next pending hunk after Accept / Reject |
-| `gitInlineDiff.removedLinesView` | `rows` | `rows` = red rows with the buttons under each hunk (needs *Enable Inline Rows* + restart once, falls back to chips until then), `inline` = chips at the end of changed lines + CodeLens, `off` |
+| `gitInlineDiff.removedLinesView` | `rows` | `rows` = red rows with the action bar under each hunk (Hunkly registers itself in `argv.json`; one restart after the first run, chips until then), `inline` = chips at the end of changed lines + CodeLens, `off` |
 | `gitInlineDiff.showCodeLens` | `true` | Accept / Reject / Diff lenses above each hunk (chips style) |
 | `gitInlineDiff.removedTextMaxLength` | `200` | cut the inline chip text after this many characters |
 | `gitInlineDiff.showGutterIcons` | `true` | green / blue / orange bars in the glyph margin |
@@ -170,7 +170,7 @@ Hunkly بيقارن أي ملف بتفتحه بالنسخة اللي على GitH
 - **تغييرك** أخضر وعليه "yours · not on origin/…" وأزرار **Reject / Accept**. **تغيير جاي من GitHub ولسه ما عملتش pull** أزرق وعليه "incoming from origin/…" وأزرار **Accept incoming / Dismiss**. **تعارض** (انت وهما غيرتوا نفس السطور) برتقالي وعليه "conflict" وأزرار **Accept current / Accept incoming / Accept both**. بيتحسبوا من الـ merge base بين HEAD والفرع.
 - حل التعارض: **Accept current** سيب نسختك، **Accept incoming** خد نسخة GitHub، **Accept both** يحط سطورهم فوق سطورك عشان تدمجهم بإيدك. كله تعديل عادي ينفع فيه `Ctrl+Z`.
 - `Ctrl+Shift+Y` دايماً = سيب اللي في ملفي، و `Ctrl+N` دايماً = خد نسخة GitHub للمنطقة دي. بعد أي واحدة المؤشر بينط للـ hunk اللي بعده. الـ status bar بيقول مثلاً `origin/development: 3 mine · 2 incoming · 1 conflict`.
-- الصفوف الحمرا محتاجة تفعيل مرة واحدة لكل محرر: أمر **Hunkly: Enable Inline Rows** (بيضيف سطر في `argv.json` وبيسيب نسخة `.bak`) وبعدين اقفل المحرر كله وافتحه تاني. قبل التفعيل بيشتغل بنفس المعلومات على شكل chips حمرا في آخر السطر + CodeLens.
+- الصفوف الحمرا محتاجة إعادة تشغيل واحدة بس: أول مرة Hunkly تشتغل بتضيف نفسها في `argv.json` بتاع المحرر (وبتسيب نسخة `.bak`) وبتظهرلك رسالة فيها زرار **Quit now**. اقفل المحرر كله وافتحه تاني وهتلاقي الصفوف. لحد ما تعمل كده بتشتغل بنفس المعلومات على شكل chips حمرا في آخر السطر + CodeLens، ولو عايز تفضل على الـ chips اضغط **Use chips instead**.
 - لو وقفت بالماوس على الـ hunk هيظهرلك الـ diff كامل بالـ `-` و `+` ومعاه لينكات Accept / Reject / Open diff.
 - `Ctrl+Alt+D` يفتح الـ diff editor بتاع VS Code على نفس الملف لو عايز تشوف الملف كله.
 - المقارنة بآخر fetch من الريموت، فلو فيه commits جديدة على GitHub اعمل **Fetch Remote and Refresh** من المنيو في الـ status bar. الـ incoming بيظهر بعد fetch ويختفي بعد pull.

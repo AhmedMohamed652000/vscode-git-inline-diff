@@ -3,7 +3,8 @@
   "displayName": "Git Inline Diff (Accept / Reject)",
   "description": "Cursor-style review of what changed in the open file compared to GitHub (upstream branch), HEAD or the index. Added lines are green, removed lines are shown in red, and every hunk can be accepted or rejected with a click or a shortcut.",
   "version": "0.5.0",
-  "publisher": "zetaton",
+  "publisher": "Ghammes",
+  "author": { "name": "Ghammes" },
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"

@@ -207,7 +207,7 @@ function registerCommands(controller) {
     }),
 
     reg('gitInlineDiff.enableInlineRows', async () => {
-      const extId = (controller.context.extension && controller.context.extension.id) || 'zetaton.git-inline-diff';
+      const extId = (controller.context.extension && controller.context.extension.id) || 'Ghammes.git-inline-diff';
       const argvPath = argvPathFor(vscode.env.appRoot);
       const res = enableProposedApi(argvPath, extId);
       const app = vscode.env.appName;

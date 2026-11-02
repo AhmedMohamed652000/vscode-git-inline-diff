@@ -46,7 +46,7 @@ Change them in *File → Preferences → Keyboard Shortcuts* (search for "Git In
 
 The red rows are drawn with VS Code's `editorInsets` proposed API, which an editor only grants to an extension that is listed in its `argv.json`. Enable it once per editor:
 
-1. Run **Git Inline Diff: Enable Inline Rows** from the Command Palette (or click *Enable rows* in the prompt the extension shows). It adds `"enable-proposed-api": ["zetaton.git-inline-diff"]` to the editor's `argv.json` and keeps a `.bak` copy.
+1. Run **Git Inline Diff: Enable Inline Rows** from the Command Palette (or click *Enable rows* in the prompt the extension shows). It adds `"enable-proposed-api": ["Ghammes.git-inline-diff"]` to the editor's `argv.json` and keeps a `.bak` copy.
 2. Quit the editor completely (all windows) and start it again. *Reload Window* is not enough.
 
 Without it the extension keeps working with chips + CodeLens; set `gitInlineDiff.removedLinesView` to `inline` to stay with that style on purpose.
